@@ -1,0 +1,369 @@
+
+main.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000216  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  0000028a  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000009  00800060  00800060  0000028a  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  0000028a  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000002bc  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000060  00000000  00000000  000002f8  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   0000073a  00000000  00000000  00000358  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 00000409  00000000  00000000  00000a92  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   0000048a  00000000  00000000  00000e9b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  00000024  00000000  00000000  00001328  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    000002e5  00000000  00000000  0000134c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    00000164  00000000  00000000  00001631  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 00000010  00000000  00000000  00001795  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	09 c0       	rjmp	.+18     	; 0x14 <__ctors_end>
+   2:	16 c0       	rjmp	.+44     	; 0x30 <__bad_interrupt>
+   4:	15 c0       	rjmp	.+42     	; 0x30 <__bad_interrupt>
+   6:	14 c0       	rjmp	.+40     	; 0x30 <__bad_interrupt>
+   8:	13 c0       	rjmp	.+38     	; 0x30 <__bad_interrupt>
+   a:	12 c0       	rjmp	.+36     	; 0x30 <__bad_interrupt>
+   c:	11 c0       	rjmp	.+34     	; 0x30 <__bad_interrupt>
+   e:	10 c0       	rjmp	.+32     	; 0x30 <__bad_interrupt>
+  10:	0f c0       	rjmp	.+30     	; 0x30 <__bad_interrupt>
+  12:	0e c0       	rjmp	.+28     	; 0x30 <__bad_interrupt>
+
+00000014 <__ctors_end>:
+  14:	11 24       	eor	r1, r1
+  16:	1f be       	out	0x3f, r1	; 63
+  18:	cf e9       	ldi	r28, 0x9F	; 159
+  1a:	cd bf       	out	0x3d, r28	; 61
+
+0000001c <__do_clear_bss>:
+  1c:	20 e0       	ldi	r18, 0x00	; 0
+  1e:	a0 e6       	ldi	r26, 0x60	; 96
+  20:	b0 e0       	ldi	r27, 0x00	; 0
+  22:	01 c0       	rjmp	.+2      	; 0x26 <.do_clear_bss_start>
+
+00000024 <.do_clear_bss_loop>:
+  24:	1d 92       	st	X+, r1
+
+00000026 <.do_clear_bss_start>:
+  26:	a9 36       	cpi	r26, 0x69	; 105
+  28:	b2 07       	cpc	r27, r18
+  2a:	e1 f7       	brne	.-8      	; 0x24 <.do_clear_bss_loop>
+  2c:	02 d0       	rcall	.+4      	; 0x32 <main>
+  2e:	f1 c0       	rjmp	.+482    	; 0x212 <_exit>
+
+00000030 <__bad_interrupt>:
+  30:	e7 cf       	rjmp	.-50     	; 0x0 <__vectors>
+
+00000032 <main>:
+
+bool button_plus();
+
+int main(void)
+{
+    DDRB |= 1 << PINB0;					// Configure PINB0 as output
+  32:	87 b3       	in	r24, 0x17	; 23
+  34:	81 60       	ori	r24, 0x01	; 1
+  36:	87 bb       	out	0x17, r24	; 23
+	PORTB |= 1 << PIN_PARKLIGHT_SENSE;	// Connect pull-up to PINB4
+  38:	88 b3       	in	r24, 0x18	; 24
+  3a:	80 61       	ori	r24, 0x10	; 16
+  3c:	88 bb       	out	0x18, r24	; 24
+	PORTB |= 1 << PIN_BUTTON_PLUS;		// Connect pull-up to PINB1
+  3e:	88 b3       	in	r24, 0x18	; 24
+  40:	82 60       	ori	r24, 0x02	; 2
+  42:	88 bb       	out	0x18, r24	; 24
+	PORTB |= 1 << PIN_BUTTON_MINUS;		// Connect pull-up to PINB2
+  44:	88 b3       	in	r24, 0x18	; 24
+  46:	84 60       	ori	r24, 0x04	; 4
+  48:	88 bb       	out	0x18, r24	; 24
+		
+	// Configure PWM
+	TCCR0B |= 1 << CS00;					// Set Timer 0 prescaler to clock/1 (No prescaling)
+  4a:	83 b7       	in	r24, 0x33	; 51
+  4c:	81 60       	ori	r24, 0x01	; 1
+  4e:	83 bf       	out	0x33, r24	; 51
+	TCCR0A |= (1 << WGM01) | (1 << WGM00);	// Set to 'Fast PWM' mode	
+  50:	8f b5       	in	r24, 0x2f	; 47
+  52:	83 60       	ori	r24, 0x03	; 3
+  54:	8f bd       	out	0x2f, r24	; 47
+	TCCR0A |= (1 << COM0A1);				// Clear OC0A output on compare match, upwards counting.
+  56:	8f b5       	in	r24, 0x2f	; 47
+  58:	80 68       	ori	r24, 0x80	; 128
+  5a:	8f bd       	out	0x2f, r24	; 47
+	
+	// Max power blink on the start
+	OCR0A = POWER_MAX;
+  5c:	8f ef       	ldi	r24, 0xFF	; 255
+  5e:	86 bf       	out	0x36, r24	; 54
+	_delay_ms(BLINK_TIME_MS);
+	
+	// Load and validate settings from EEPROM
+	power_high = eeprom_read_byte((uint8_t*)EEPROM_ADDR_POWER_HIGH);
+  60:	80 e0       	ldi	r24, 0x00	; 0
+  62:	90 e0       	ldi	r25, 0x00	; 0
+  64:	c2 d0       	rcall	.+388    	; 0x1ea <eeprom_read_byte>
+  66:	c8 2f       	mov	r28, r24
+  68:	80 93 65 00 	sts	0x0065, r24	; 0x800065 <power_high>
+	power_low = eeprom_read_byte((uint8_t*)EEPROM_ADDR_POWER_LOW);	
+  6c:	81 e0       	ldi	r24, 0x01	; 1
+  6e:	90 e0       	ldi	r25, 0x00	; 0
+  70:	bc d0       	rcall	.+376    	; 0x1ea <eeprom_read_byte>
+  72:	80 93 66 00 	sts	0x0066, r24	; 0x800066 <power_low>
+	if((power_high == 0) | (power_high > POWER_LIMIT)) {power_high = POWER_HIGH;}
+  76:	c1 50       	subi	r28, 0x01	; 1
+  78:	c2 38       	cpi	r28, 0x82	; 130
+  7a:	18 f0       	brcs	.+6      	; 0x82 <__DATA_REGION_LENGTH__+0x42>
+  7c:	92 e8       	ldi	r25, 0x82	; 130
+  7e:	90 93 65 00 	sts	0x0065, r25	; 0x800065 <power_high>
+	if((power_low == 0) | (power_low > POWER_LIMIT)) {power_low = POWER_LOW;}
+  82:	81 50       	subi	r24, 0x01	; 1
+  84:	82 38       	cpi	r24, 0x82	; 130
+  86:	18 f0       	brcs	.+6      	; 0x8e <__DATA_REGION_LENGTH__+0x4e>
+  88:	82 e3       	ldi	r24, 0x32	; 50
+  8a:	80 93 66 00 	sts	0x0066, r24	; 0x800066 <power_low>
+		
+	parklight = !(PINB & (1 << PIN_PARKLIGHT_SENSE));	// Get parklight status. Pin low if parklight active.
+  8e:	86 b3       	in	r24, 0x16	; 22
+  90:	98 2f       	mov	r25, r24
+  92:	92 95       	swap	r25
+  94:	9f 70       	andi	r25, 0x0F	; 15
+  96:	81 e0       	ldi	r24, 0x01	; 1
+  98:	89 27       	eor	r24, r25
+  9a:	81 70       	andi	r24, 0x01	; 1
+  9c:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <parklight>
+	if (parklight)
+  a0:	88 23       	and	r24, r24
+  a2:	59 f0       	breq	.+22     	; 0xba <__stack+0x1b>
+	{
+		power = power_low;
+  a4:	80 91 66 00 	lds	r24, 0x0066	; 0x800066 <power_low>
+  a8:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <power>
+		eeprom_addr_power = (uint8_t*)EEPROM_ADDR_POWER_LOW;
+  ac:	81 e0       	ldi	r24, 0x01	; 1
+  ae:	90 e0       	ldi	r25, 0x00	; 0
+  b0:	90 93 68 00 	sts	0x0068, r25	; 0x800068 <eeprom_addr_power+0x1>
+  b4:	80 93 67 00 	sts	0x0067, r24	; 0x800067 <eeprom_addr_power>
+  b8:	08 c0       	rjmp	.+16     	; 0xca <__stack+0x2b>
+	}
+	else
+	{
+		power = power_high;
+  ba:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <power_high>
+  be:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <power>
+		eeprom_addr_power = (uint8_t*)EEPROM_ADDR_POWER_HIGH;
+  c2:	10 92 68 00 	sts	0x0068, r1	; 0x800068 <eeprom_addr_power+0x1>
+  c6:	10 92 67 00 	sts	0x0067, r1	; 0x800067 <eeprom_addr_power>
+	}
+	OCR0A = power;
+  ca:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <power>
+  ce:	86 bf       	out	0x36, r24	; 54
+	
+    while (1) 
+    {
+		if(BUTTON_PLUS & BUTTON_MINUS & (counter < OH_PROTECTION_TIME)) // Enable settings (only if OHP not active)
+  d0:	96 b3       	in	r25, 0x16	; 22
+  d2:	26 b3       	in	r18, 0x16	; 22
+  d4:	96 95       	lsr	r25
+  d6:	81 e0       	ldi	r24, 0x01	; 1
+  d8:	98 27       	eor	r25, r24
+  da:	26 95       	lsr	r18
+  dc:	26 95       	lsr	r18
+  de:	82 27       	eor	r24, r18
+  e0:	81 70       	andi	r24, 0x01	; 1
+  e2:	89 23       	and	r24, r25
+  e4:	91 e0       	ldi	r25, 0x01	; 1
+  e6:	20 91 60 00 	lds	r18, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+  ea:	30 91 61 00 	lds	r19, 0x0061	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+  ee:	28 3e       	cpi	r18, 0xE8	; 232
+  f0:	33 40       	sbci	r19, 0x03	; 3
+  f2:	08 f0       	brcs	.+2      	; 0xf6 <__stack+0x57>
+  f4:	90 e0       	ldi	r25, 0x00	; 0
+  f6:	88 23       	and	r24, r24
+  f8:	59 f0       	breq	.+22     	; 0x110 <__stack+0x71>
+  fa:	99 23       	and	r25, r25
+  fc:	49 f0       	breq	.+18     	; 0x110 <__stack+0x71>
+		{
+			settings_enabled = true;
+  fe:	81 e0       	ldi	r24, 0x01	; 1
+ 100:	80 93 62 00 	sts	0x0062, r24	; 0x800062 <settings_enabled>
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 104:	8f e5       	ldi	r24, 0x5F	; 95
+ 106:	9a ee       	ldi	r25, 0xEA	; 234
+ 108:	01 97       	sbiw	r24, 0x01	; 1
+ 10a:	f1 f7       	brne	.-4      	; 0x108 <__stack+0x69>
+ 10c:	00 c0       	rjmp	.+0      	; 0x10e <__stack+0x6f>
+ 10e:	00 00       	nop
+			_delay_ms(BUTTON_DELAY_MS);
+		}	
+		if((BUTTON_PLUS | BUTTON_MINUS) & settings_enabled)
+ 110:	96 b3       	in	r25, 0x16	; 22
+ 112:	26 b3       	in	r18, 0x16	; 22
+ 114:	96 95       	lsr	r25
+ 116:	81 e0       	ldi	r24, 0x01	; 1
+ 118:	98 27       	eor	r25, r24
+ 11a:	91 70       	andi	r25, 0x01	; 1
+ 11c:	26 95       	lsr	r18
+ 11e:	26 95       	lsr	r18
+ 120:	82 27       	eor	r24, r18
+ 122:	81 70       	andi	r24, 0x01	; 1
+ 124:	89 2b       	or	r24, r25
+ 126:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <settings_enabled>
+ 12a:	88 23       	and	r24, r24
+ 12c:	91 f1       	breq	.+100    	; 0x192 <__stack+0xf3>
+ 12e:	99 23       	and	r25, r25
+ 130:	81 f1       	breq	.+96     	; 0x192 <__stack+0xf3>
+ 132:	8f e6       	ldi	r24, 0x6F	; 111
+ 134:	97 e1       	ldi	r25, 0x17	; 23
+ 136:	01 97       	sbiw	r24, 0x01	; 1
+ 138:	f1 f7       	brne	.-4      	; 0x136 <__stack+0x97>
+ 13a:	00 c0       	rjmp	.+0      	; 0x13c <__stack+0x9d>
+ 13c:	00 00       	nop
+		{
+			_delay_ms(ANTI_GLITCH_DELAY_MS);
+			if(BUTTON_PLUS)
+ 13e:	b1 99       	sbic	0x16, 1	; 22
+ 140:	0b c0       	rjmp	.+22     	; 0x158 <__stack+0xb9>
+			{
+				power += POWER_SET_STEP;
+ 142:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <power>
+ 146:	8b 5f       	subi	r24, 0xFB	; 251
+ 148:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <power>
+ 14c:	8f e5       	ldi	r24, 0x5F	; 95
+ 14e:	9a ee       	ldi	r25, 0xEA	; 234
+ 150:	01 97       	sbiw	r24, 0x01	; 1
+ 152:	f1 f7       	brne	.-4      	; 0x150 <__stack+0xb1>
+ 154:	00 c0       	rjmp	.+0      	; 0x156 <__stack+0xb7>
+ 156:	00 00       	nop
+				_delay_ms(BUTTON_DELAY_MS);
+			}
+			if(BUTTON_MINUS)
+ 158:	b2 99       	sbic	0x16, 2	; 22
+ 15a:	0d c0       	rjmp	.+26     	; 0x176 <__stack+0xd7>
+			{
+				if(power > POWER_SET_STEP) {power -= POWER_SET_STEP;}
+ 15c:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <power>
+ 160:	86 30       	cpi	r24, 0x06	; 6
+ 162:	18 f0       	brcs	.+6      	; 0x16a <__stack+0xcb>
+ 164:	85 50       	subi	r24, 0x05	; 5
+ 166:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <power>
+ 16a:	8f e5       	ldi	r24, 0x5F	; 95
+ 16c:	9a ee       	ldi	r25, 0xEA	; 234
+ 16e:	01 97       	sbiw	r24, 0x01	; 1
+ 170:	f1 f7       	brne	.-4      	; 0x16e <__stack+0xcf>
+ 172:	00 c0       	rjmp	.+0      	; 0x174 <__stack+0xd5>
+ 174:	00 00       	nop
+				_delay_ms(BUTTON_DELAY_MS);
+			}
+			if(power > POWER_LIMIT) {power = POWER_LIMIT;}		// Ensure power does not exceed limitations
+ 176:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <power>
+ 17a:	83 38       	cpi	r24, 0x83	; 131
+ 17c:	18 f0       	brcs	.+6      	; 0x184 <__stack+0xe5>
+ 17e:	82 e8       	ldi	r24, 0x82	; 130
+ 180:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <power>
+			eeprom_write_byte(eeprom_addr_power, power);		// Save new settings to EEPROM
+ 184:	60 91 64 00 	lds	r22, 0x0064	; 0x800064 <power>
+ 188:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <eeprom_addr_power>
+ 18c:	90 91 68 00 	lds	r25, 0x0068	; 0x800068 <eeprom_addr_power+0x1>
+ 190:	33 d0       	rcall	.+102    	; 0x1f8 <eeprom_write_byte>
+		}
+		OCR0A = power;
+ 192:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <power>
+ 196:	86 bf       	out	0x36, r24	; 54
+		
+		// Overheat protection
+		if(!settings_enabled)	// Enable OHP only if settings disabled
+ 198:	80 91 62 00 	lds	r24, 0x0062	; 0x800062 <settings_enabled>
+ 19c:	81 11       	cpse	r24, r1
+ 19e:	98 cf       	rjmp	.-208    	; 0xd0 <__stack+0x31>
+		{	
+			if(counter < OH_PROTECTION_TIME)
+ 1a0:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+ 1a4:	90 91 61 00 	lds	r25, 0x0061	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+ 1a8:	88 3e       	cpi	r24, 0xE8	; 232
+ 1aa:	23 e0       	ldi	r18, 0x03	; 3
+ 1ac:	92 07       	cpc	r25, r18
+ 1ae:	60 f4       	brcc	.+24     	; 0x1c8 <__stack+0x129>
+			{
+				counter++;
+ 1b0:	01 96       	adiw	r24, 0x01	; 1
+ 1b2:	90 93 61 00 	sts	0x0061, r25	; 0x800061 <__DATA_REGION_ORIGIN__+0x1>
+ 1b6:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+ 1ba:	87 eb       	ldi	r24, 0xB7	; 183
+ 1bc:	9b e0       	ldi	r25, 0x0B	; 11
+ 1be:	01 97       	sbiw	r24, 0x01	; 1
+ 1c0:	f1 f7       	brne	.-4      	; 0x1be <__stack+0x11f>
+ 1c2:	00 c0       	rjmp	.+0      	; 0x1c4 <__stack+0x125>
+ 1c4:	00 00       	nop
+ 1c6:	84 cf       	rjmp	.-248    	; 0xd0 <__stack+0x31>
+				_delay_ms(COUNTER_PERIOD_MS);
+			}
+			else
+			{
+				if(power > POWER_LOW) {power--;}
+ 1c8:	80 91 64 00 	lds	r24, 0x0064	; 0x800064 <power>
+ 1cc:	83 33       	cpi	r24, 0x33	; 51
+ 1ce:	18 f0       	brcs	.+6      	; 0x1d6 <__stack+0x137>
+ 1d0:	81 50       	subi	r24, 0x01	; 1
+ 1d2:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <power>
+ 1d6:	9f eb       	ldi	r25, 0xBF	; 191
+ 1d8:	24 ed       	ldi	r18, 0xD4	; 212
+ 1da:	41 e0       	ldi	r20, 0x01	; 1
+ 1dc:	91 50       	subi	r25, 0x01	; 1
+ 1de:	20 40       	sbci	r18, 0x00	; 0
+ 1e0:	40 40       	sbci	r20, 0x00	; 0
+ 1e2:	e1 f7       	brne	.-8      	; 0x1dc <__stack+0x13d>
+ 1e4:	00 c0       	rjmp	.+0      	; 0x1e6 <__stack+0x147>
+ 1e6:	00 00       	nop
+ 1e8:	73 cf       	rjmp	.-282    	; 0xd0 <__stack+0x31>
+
+000001ea <eeprom_read_byte>:
+ 1ea:	e1 99       	sbic	0x1c, 1	; 28
+ 1ec:	fe cf       	rjmp	.-4      	; 0x1ea <eeprom_read_byte>
+ 1ee:	8e bb       	out	0x1e, r24	; 30
+ 1f0:	e0 9a       	sbi	0x1c, 0	; 28
+ 1f2:	99 27       	eor	r25, r25
+ 1f4:	8d b3       	in	r24, 0x1d	; 29
+ 1f6:	08 95       	ret
+
+000001f8 <eeprom_write_byte>:
+ 1f8:	26 2f       	mov	r18, r22
+
+000001fa <eeprom_write_r18>:
+ 1fa:	e1 99       	sbic	0x1c, 1	; 28
+ 1fc:	fe cf       	rjmp	.-4      	; 0x1fa <eeprom_write_r18>
+ 1fe:	1c ba       	out	0x1c, r1	; 28
+ 200:	8e bb       	out	0x1e, r24	; 30
+ 202:	2d bb       	out	0x1d, r18	; 29
+ 204:	0f b6       	in	r0, 0x3f	; 63
+ 206:	f8 94       	cli
+ 208:	e2 9a       	sbi	0x1c, 2	; 28
+ 20a:	e1 9a       	sbi	0x1c, 1	; 28
+ 20c:	0f be       	out	0x3f, r0	; 63
+ 20e:	01 96       	adiw	r24, 0x01	; 1
+ 210:	08 95       	ret
+
+00000212 <_exit>:
+ 212:	f8 94       	cli
+
+00000214 <__stop_program>:
+ 214:	ff cf       	rjmp	.-2      	; 0x214 <__stop_program>
